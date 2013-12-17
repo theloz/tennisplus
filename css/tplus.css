@@ -1,0 +1,14 @@
+/* 
+    Created on : 16-dic-2013, 12.52.43
+    Author     : lorenzo.lombardi
+*/
+.tp_clear{float:none;clear:both;margin:0;border:0;padding:0;}
+.tp_table{border:1px;}
+.tplus_th{padding:3px 4px;font-size:10pt;}
+.tplus_td{text-align:center;font-size:9pt;}
+.tplus_td2{text-align:left;font-size:9pt;padding:2px 10px;}
+.tp_odd{background:#e7e7e7;}
+.tp_even{background:#f7f7f7;}
+.adminfooter{position:absolute;bottom:10px;}
+.tplus_msg_error{color:red;}
+.tplus_msg_success{color:green;}
