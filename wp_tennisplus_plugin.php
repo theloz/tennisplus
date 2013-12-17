@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Tennisplus plugin
-Plugin URI: http://www.theloz.net/tennisplusplgin
+Plugin URI: https://github.com/theloz/tennisplus
 Description: Tennisplus administration and management
 Version: 1.2
 Author: Lorenzo Lombardi
