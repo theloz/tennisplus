@@ -44,6 +44,7 @@ if(!class_exists('WP_tplus_plugin')){
                         require_once(sprintf("%s/custom_tables/matches_listtable.class.php", dirname(__FILE__)));
                         require_once(sprintf("%s/custom_tables/places_listtable.class.php", dirname(__FILE__)));
                         require_once(sprintf("%s/custom_tables/points_listtable.class.php", dirname(__FILE__)));
+                        require_once(sprintf("%s/custom_tables/subs_listtable.class.php", dirname(__FILE__)));
 		
                         require_once(sprintf("%s/admin/admin.class.php", dirname(__FILE__)));
                         require_once(sprintf("%s/shortcodes/shortcodes.class.php", dirname(__FILE__)));
@@ -110,5 +111,6 @@ if(class_exists('WP_tplus_plugin')){+
         add_shortcode( 'tplus_matches', array('Shortcode_tplus', 'tplus_matches_shortcode_function' ) ); 
         add_shortcode( 'tplus_places', array('Shortcode_tplus', 'tplus_places_shortcode_function' ) ); 
         add_shortcode( 'tplus_tournaments', array('Shortcode_tplus', 'tplus_tournaments_shortcode_function' ) ); 
+        add_shortcode( 'tplus_subs', array('Shortcode_tplus', 'tplus_subscriptions_shortcode_function' ) ); 
 
 }

@@ -205,31 +205,53 @@ if(!class_exists('Shortcode_tplus')){
                         // Attributes
                         extract( shortcode_atts(
                                 array(
-                                        'tourid'               => '0',         //if not empty bind the search to a single tournament
+                                        'tourid'               => '0',         //if not empty bind the search to a single tournament else shows all tournaments
                                         'limit'                 => '0',         //limits number of results, 0 for all
                                         'fulldetails'           => 'no',         //1 all matches, 0 no match
+                                        'displaytype'           => 'full',       //table for a list, full for full details
+                                        'url'                   => '',
+                                        'withtitle'             => 'yes',
                                 ), $atts )
                         );
                         $q = "SELECT 
-                                a.id AS tid, a.tname AS Nome, a.tdesc AS Descrizione, a.date_start AS 'Data Inizio', a.date_end AS 'Data fine',
-                                b.id AS placeid, b.plname AS Luogo,
-                                c.id AS pointid, c.plabel AS Punteggio
+                                a.id AS tid, a.tname, a.tdesc, a.date_start, a.date_end,
+                                b.id AS placeid, b.plname,
+                                c.id AS pointid, c.plabel
                                 FROM $tournaments_table a
-                                JOIN $places_table b ON a.placeid = b.id
+                                LEFT JOIN $places_table b ON a.placeid = b.id
                                 JOIN $points_table c ON a.pointstype = c.id
-                                WHERE a.id =".$atts['tourid'];
+                                ".($atts['tourid'] == 0 ? '' : "WHERE a.id =".$atts['tourid'] );
                         $tournaments = $wpdb->get_results($wpdb->prepare($q, 1, 0), ARRAY_A);
                         if($atts['fulldetails']=='yes'){
                                 $wpt = new Shortcode_tplus;
                                 $matches = $wpt->tplus_matches_shortcode_function(array('tournamentid'=>$atts['tourid'], 'limit'=>$atts['limit']));
-                                echo "pippo";
-                                print_r($matches);
                         }
                         if( empty($tournaments) ){
                                 self::tplus_shortcode_rendering($tournaments,'empty');
                         }
                         else{
-                                self::tplus_shortcode_rendering($tournaments,'tournament');
+                                $tdef = array();
+                                $i = 0;
+                                setlocale(LC_TIME, 'ita', 'it_IT.utf8');
+                                foreach( $tournaments as $v){
+                                        //$tdef[$i]['Descrizione'] = $v['tdesc'];
+                                        if($atts['withtitle']=='yes'){
+                                                if($atts['url']=='')
+                                                        $tdef[$i]['Nome'] = $v['tname'];
+                                                else
+                                                        $tdef[$i]['Nome'] = '<a href="'.$atts['url'].'">'.$v['tname'].'</a>';
+                                        }
+                                        if($v['plname']!="")
+                                                $tdef[$i]['Luogo'] = $v['plname'];
+                                        $tdef[$i]['Formula torneo'] = $v['plabel'];
+                                        $tdef[$i]['Inizio'] = $v['date_start'];
+                                        $tdef[$i]['Fine'] = $v['date_end'];
+                                        //$tdef[$i]['Button'] = '<a target="_blank" class="button_link orange alignnone" href="#" style="opacity: 1;">Iscriviti</a>';
+                                        //$tdef[$i]['Button'] = '<form method="post"><button name="subs[ok]" class="button_link orange alignnone" style="opacity: 1;height:28px;padding-top:2px;">Iscriviti</button><input type="hidden" name="subs[tid]" value="'.$v['tid'].'" /></form>';
+                                        $i++;
+                                }
+
+                                self::tplus_shortcode_rendering($tdef,'tournament');
                                 if(!empty($matches))
                                         self::tplus_shortcode_rendering($matches,'table');
                         }
@@ -290,8 +312,11 @@ if(!class_exists('Shortcode_tplus')){
                                         $tb .= "<table class=\"tp_table tp_matches_place\"><tbody>";
                                         foreach( $place as $k => $v ){
                                                 if( $v != '' && $k != "Nome" ){
+                                                        if(preg_match("/[0-9]{4}\-[0-9]{2}\-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/",$v)){
+                                                                $v = utf8_encode(strftime("%A, %d %B %Y - %H:%M", strtotime($v)));
+                                                        }
                                                         $tb .= "<tr>";
-                                                        $tb .= "<td class=\"tplus_td2\"><strong>$k</strong></td><td class=\"tplus_td2\">$v</td>";
+                                                        $tb .= "<td class=\"tplus_td2\"><strong>".($k!='Button' ? $k : '')."</strong></td><td class=\"tplus_td2\">$v</td>";
                                                         $tb .= "</tr>";
                                                 }
                                         }
@@ -309,7 +334,104 @@ if(!class_exists('Shortcode_tplus')){
                                         break;
                         }
                 }
+                //shows a tournaments
+                function tplus_subscriptions_shortcode_function( $atts ) {
+                        global $wpdb;
+                        $places_table = $wpdb->prefix."tplus_places";
+                        $matches_table = $wpdb->prefix."tplus_matches";
+                        $tournaments_table = $wpdb->prefix."tplus_tournaments";
+                        $points_table = $wpdb->prefix."tplus_points";
+                        $subs_table = $wpdb->prefix."tplus_subscriptions";
+                        $users_table = $wpdb->prefix."users";
+                        // Attributes
+                        extract( shortcode_atts(
+                                array(
+                                        'withtitle'     => 'no',                
+                                        'tournamentid'  => '0',         //if not empty bind the search to a single tournament else shows all tournaments
+                                ), $atts )
+                        );
+                        $current_user = wp_get_current_user();
+                        
+                        if($current_user->ID==""){
+                                echo __('<h3>Devi essere autenticato per vedere la pagina</h3>', 'tplus_shortcodes');
+                                return;
+                        }
+                        else{
+                                if(isset($_POST['subs'])){
+                                        //check if user has already a pending request
+                                        $q = "SELECT * FROM $subs_table WHERE fk_tour = ".$atts['tournamentid']." AND fk_userid = ".$current_user->ID;
+                                        $chk = $wpdb->get_results($wpdb->prepare($q, 1, 0), ARRAY_A);
+                                        //tournament data retrieve
+                                        $qt = "SELECT tname FROM $tournaments_table WHERE id=".$atts['tournamentid'];
+                                        $tournaments = $wpdb->get_results($wpdb->prepare($qt, 1, 0), ARRAY_A);
+                                        $tname = $tournaments[0]['tname'];
+                                        if(empty($chk)){
+                                                $errs = '';
+                                                //isert request
+                                                $ctrl = $wpdb->insert( $subs_table, array('fk_userid'=>$current_user->ID,'fk_tour'=>$atts['tournamentid']),array('%d','%d') );
+                                                if(!$ctrl){
+                                                        $errs .= "<p>".__('Impossibile aggiornare dati. Contattatare amminisratore', 'tplus_shortcodes')."</p>";
+                                                }
+                                                else{
+                                                       $errs .= "<p>". __('Salve <strong>'.$current_user->display_name.'</strong>, la tua richiesta di iscrizione al torneo '.$tname.' &eacute; stata inoltrata. Verrai ricontattato al pi&ugrave; presto', 'tplus_shortcodes')."</p>";
+                                                }
+                                                //send mail
+                                                include_once($_SERVER['DOCUMENT_ROOT'].'/wp-includes/class-phpmailer.php' );
+                                                $mail = new PHPMailer();
+                                                $mail->IsSMTP();
+                                                $mail->SetFrom("info@tennisplus.it", "Tennisplus Info");
+                                                $mail->AddReplyTo("info@tennisplus.it", "Tennisplus Info");
+                                                $mail->AddAddress($current_user->user_email);
+                                                $mail->Subject = __('Conferma richiesta di iscrizione torneo '.$tname, 'tplus_shortcodes');
+                                                $mail->MsgHTML("<p>Salve <strong>'.$current_user->display_name.'</strong>, la tua richiesta di iscrizione al torneo '.$tname.' &eacute; stata inoltrata. Verrai ricontattato al pi&ugrave; presto</p><p>Cordiali saluti</p><p>Lo staff di Tenniplus</p>");
+
+                                                if (!$mail->Send()) {
+                                                    $errs .=  "<p>".__('Abbiamo riscontrato problemi nell\'invio della mail di benvenuto. Si prega di contattare lo staff per verificare i tuoi dati', 'tplus_shortcodes')."</p>";
+                                                }
+                                                echo $errs;
+                                                return "";
+                                        }
+                                        else{
+                                                echo __('<h3>Salve '.$current_user->display_name.', hai già effettuato una richiesta di iscrizione a tuo nome per il torneo denominato '.$tname.'</h3>', 'tplus_shortcodes');
+                                                return "";    
+                                        }
+                                }
+                                else{
+                                        $q = "SELECT 
+                                        a.id AS tid, a.tname, a.tdesc, a.date_start, a.date_end,
+                                        b.id AS placeid, b.plname,
+                                        c.id AS pointid, c.plabel
+                                        FROM $tournaments_table a
+                                        LEFT JOIN $places_table b ON a.placeid = b.id
+                                        JOIN $points_table c ON a.pointstype = c.id
+                                        ".($atts['tourid'] == 0 ? '' : "WHERE a.id =".$atts['tourid'] );
+                                        $tournaments = $wpdb->get_results($wpdb->prepare($q, 1, 0), ARRAY_A);
+                                        if(empty($tournaments)){
+                                                self::tplus_shortcode_rendering($tournaments,'empty');
+                                        }
+                                        else{
+                                                $tdef = array();
+                                                $i = 0;
+                                                setlocale(LC_TIME, 'ita', 'it_IT.utf8');
+                                                foreach( $tournaments as $v){
+                                                        $tdef[$i]['Descrizione'] = $v['tdesc'];
+                                                        if($atts['withtitle']=='yes')
+                                                                $tdef[$i]['Nome'] = $v['tname'];
+                                                        $tdef[$i]['Luogo'] = $v['plname'];
+                                                        $tdef[$i]['Formula torneo'] = $v['plabel'];
+                                                        $tdef[$i]['Inizio'] = $v['date_start'];
+                                                        $tdef[$i]['Fine'] = $v['date_end'];
+                                                        //$tdef[$i]['Button'] = '<a target="_blank" class="button_link orange alignnone" href="#" style="opacity: 1;">Iscriviti</a>';
+                                                        $tdef[$i]['Button'] = '<form method="post"><button name="subs[ok]" class="button_link orange alignnone" style="opacity: 1;height:28px;padding-top:2px;">Iscriviti</button><input type="hidden" name="subs[tid]" value="'.$v['tid'].'" /></form>';
+                                                        $i++;
+                                                }
+
+                                                self::tplus_shortcode_rendering($tdef,'tournament');
+                                        }
+                                }
+                                return "";
+                        }
                 
+                }
         }
 }
-

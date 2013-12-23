@@ -3,8 +3,8 @@ Contributors: (this should be a list of wordpress.org userid's)
 Donate link: http://www.theloz.net
 Tags: tennis,sport,administration,sport management
 Requires at least: 3.7
-Tested up to: 3.8
-Stable tag: 1.2
+Tested up to: 3.7
+Stable tag: 1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 

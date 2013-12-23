@@ -7,6 +7,7 @@ if(!class_exists('WP_tplus_tables')){
 			$this->matches_table = $wpdb->prefix."tplus_matches";
 			$this->tournaments_table = $wpdb->prefix."tplus_tournaments";
 			$this->points_table = $wpdb->prefix."tplus_points";
+                        $this->subscr_table = $wpdb->prefix."tplus_subscriptions";
 			$this->dbversion = '1.1';
 		}
 		public function table_install(){
@@ -78,6 +79,15 @@ if(!class_exists('WP_tplus_tables')){
                         PRIMARY KEY  (`id`)
                         );";
 			dbDelta($sql);
+                        
+                        $sql = "CREATE TABLE `wp_tplus_subscriptions` (
+                        `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+                        `fk_userid` int(11) unsigned DEFAULT NULL,
+                        `fk_tour` int(11) unsigned DEFAULT NULL,
+                        `pending` int(11) unsigned DEFAULT '1',
+                        PRIMARY KEY  (`id`)
+                        );";
+			dbDelta($sql);
 			
 			// save current database version for later use (on upgrade)
 			add_option('tplus_db_version', $this->dbversion);
@@ -123,6 +133,7 @@ if(!class_exists('WP_tplus_tables')){
 			$matches_table = $wpdb->prefix."tplus_matches";
 			$tournaments_table = $wpdb->prefix."tplus_tournaments";
 			$points_table = $wpdb->prefix."tplus_points";
+                        $subscr_table = $wpdb->prefix."tplus_subscriptions";
                         //checks on directory
                         $directory = $updir['basedir']."/tplusbackups/";
                         if(!file_exists($directory)) { 
@@ -156,6 +167,11 @@ if(!class_exists('WP_tplus_tables')){
                         self::tplus_write_csv($data, $pptmp);
                         $zip->addFile($pptmp,'point_tmp.csv');
                         
+                        $data = $wpdb->get_results( "SELECT * FROM ".$subscr_table,ARRAY_A);
+                        $pptmp = sys_get_temp_dir().'/subcription_tmp.csv';
+                        self::tplus_write_csv($data, $pptmp);
+                        $zip->addFile($pptmp,'subcription_tmp.csv');
+                        
                         if($zip->close()!==TRUE){
                             die('wrong');    
                         }                        
@@ -173,6 +189,7 @@ if(!class_exists('WP_tplus_tables')){
 			$wpdb->query("DROP TABLE IF EXISTS ".$this->matches_table);
 			$wpdb->query("DROP TABLE IF EXISTS ".$this->tournaments_table);
 			$wpdb->query("DROP TABLE IF EXISTS ".$this->points_table);
+			$wpdb->query("DROP TABLE IF EXISTS ".$this->subscr_table);
 		}
 		public function table_reset(){
 			global $wpdb;
@@ -180,6 +197,7 @@ if(!class_exists('WP_tplus_tables')){
 			$wpdb->query("TRUNCATE TABLE ".$this->matches_table);
 			$wpdb->query("TRUNCATE TABLE ".$this->tournaments_table);
 			$wpdb->query("TRUNCATE TABLE ".$this->points_table);
+			$wpdb->query("TRUNCATE TABLE ".$this->subscr_table);
 		}
 		function tplus_update_db_check() {
 			if (get_site_option('tplus_db_version') != $this->dbversion) {

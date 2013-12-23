@@ -75,6 +75,22 @@ if(!class_exists('Admin_tplus')){
 					'tplus_pointsedit',
 					array('Custom_tplus_Points_Table','points_form_page_handler')
 				);
+				add_submenu_page(
+					'tennisplus', 
+					__('Iscrizioni', 'tplus_db'), 
+					__('Iscrizioni', 'tplus_db'), 
+					'activate_plugins', 
+					'tplus_subs', 
+					array('Admin_tplus','subs')
+				);
+                                add_submenu_page(
+					null, 
+					__('Aggiungi iscrizione', 'tplus_db'), 
+					__('Aggiungi iscrizione', 'tplus_db'), 
+					'activate_plugins', 
+					'tplus_subsedit',
+					array('Custom_tplus_Subs_Table','subs_form_page_handler')
+				);
 		}
 		public function menu_welcome(){
                         $msg = '';
@@ -137,6 +153,10 @@ if(!class_exists('Admin_tplus')){
                                                                         $table = $wpdb->prefix."tplus_places";
                                                                         $q = "INSERT INTO $table (id, `plname`, `pldescription`, `lat`, `lon`, `plcity`, `plprovince`, `pladdress`, `plphone`, `plmail`, `plmobile`, `plrefperson`, `plfield1`, `plfield2`, `plfield3`, `plfield4`, `plnote`) VALUES ";
                                                                         break;
+                                                                case 'subs':
+                                                                        $table = $wpdb->prefix."tplus_subscriptions";
+                                                                        $q = "INSERT INTO $table (id, `fk_userid`, `fk_tour`, `pending`) VALUES ";
+                                                                        break;
                                                         }
                                                         if($_POST['admin']['fileoperation']==1){
                                                                 $wpdb->query("TRUNCATE TABLE ".$table);
@@ -175,6 +195,7 @@ if(!class_exists('Admin_tplus')){
                                         <option value="matches"><?php _e('Incontri', 'tplus_admin') ?></option>
                                         <option value="tours"><?php _e('Tornei', 'tplus_admin') ?></option>
                                         <option value="places"><?php _e('Luoghi', 'tplus_admin') ?></option>
+                                        <option value="subs"><?php _e('Iscrizioni', 'tplus_admin') ?></option>
                                 </select><br /><br />
                                 <select name="admin[fileoperation]">
                                         <option value="0" selected="selected">Append</option>
@@ -293,6 +314,31 @@ if(!class_exists('Admin_tplus')){
 				<div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
 				<h2><?php _e('Punteggi', 'tplus_points')?> <a class="add-new-h2"
 							 href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=tplus_pointsedit&action=edit');?>"><?php _e('Aggiungi nuovo', 'tplus_points')?></a>
+				</h2>
+				<?php echo $message; ?>
+
+				<form id="points-table" method="GET">
+					<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>"/>
+					<?php $table->display() ?>
+				</form>
+			</div>
+			<?php
+		}
+		public function subs(){
+			global $wpdb;
+
+			$table = new Custom_tplus_Subs_Table();
+			$table->prepare_items();
+
+			$message = '';
+			if ('delete' === $table->current_action()) {
+				$message = '<div class="updated below-h2" id="message"><p>' . sprintf(__('Iscrizione eliminata: %d', 'tplus_subs'), count($_REQUEST['id'])) . '</p></div>';
+			}
+			?>
+			<div class="wrap">
+				<div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
+				<h2><?php _e('Iscrizioni', 'tplus_subs')?> <a class="add-new-h2"
+							 href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=tplus_subsedit&action=edit');?>"><?php _e('Aggiungi nuova iscrizione', 'tplus_subs')?></a>
 				</h2>
 				<?php echo $message; ?>
 
