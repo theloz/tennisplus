@@ -98,10 +98,12 @@ if(class_exists('WP_tplus_plugin')){+
         //loads additional files
         wp_enqueue_script('jquery-ui-datepicker');
         wp_enqueue_script('jquery-ui-autocomplete');
+        wp_enqueue_script('jquery-ui-tabs');
         wp_enqueue_script( 'tp_datatables', plugins_url( 'tennisplus_plugin/js/jquery.dataTables.min.js' , dirname(__FILE__) ) );
         wp_enqueue_script( 'tp_frontend_scripts', plugins_url( 'tennisplus_plugin/js/tplus_fe.js' , dirname(__FILE__) ) );
         
-        wp_enqueue_style('jquery-ui-css', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
+        //wp_enqueue_style('jquery-ui-css', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
+        wp_enqueue_style('jquery-ui-css', plugins_url( 'tennisplus_plugin/css/jquery-ui.css'), dirname(__FILE__) );
         wp_enqueue_style('tplus_ui_css', plugins_url( 'tennisplus_plugin/css/tplus.css'), dirname(__FILE__) );
         wp_enqueue_style('tp_datatables', plugins_url( 'tennisplus_plugin/css/jquery.dataTables.css'), dirname(__FILE__) );
         wp_enqueue_style('tp_datatables_themeroller', plugins_url( 'tennisplus_plugin/css/jquery.dataTables_themeroller.css'), dirname(__FILE__) );
@@ -112,5 +114,7 @@ if(class_exists('WP_tplus_plugin')){+
         add_shortcode( 'tplus_places', array('Shortcode_tplus', 'tplus_places_shortcode_function' ) ); 
         add_shortcode( 'tplus_tournaments', array('Shortcode_tplus', 'tplus_tournaments_shortcode_function' ) ); 
         add_shortcode( 'tplus_subs', array('Shortcode_tplus', 'tplus_subscriptions_shortcode_function' ) ); 
+        add_shortcode( 'tplus_users', array('Shortcode_tplus', 'tplus_subscribers_shortcode_function' ) ); 
+        add_shortcode( 'tplus_friendlymatch', array('Shortcode_tplus', 'tplus_friendlysubscribe_shortcode_function' ) ); 
 
 }

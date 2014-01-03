@@ -382,6 +382,7 @@ if(!class_exists('Custom_tplus_Tournament_Table')){
                         </th>
                         <td>
                                 <select id="placeid" name="placeid">
+                                        <option>Luogo</option>
                                         <?php
                                         foreach($items as $v){
                                                 echo "<option value='".$v['id']."'".($item['placeid']==$v['id']?" selected='selected'":'').">".$v['plname']."</option>";

@@ -295,8 +295,8 @@ if(!class_exists('Custom_tplus_Matches_Table')){
                         ?>
                         <div class="wrap">
                         <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
-                        <h2><?php _e('Incontri', 'tplus_matches')?> <a class="add-new-h2"
-                                        href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=tplus_matches');?>"><?php _e('elenco incontri', 'tplus_matches')?></a>
+                        <h2>
+                                <?php _e('Incontri', 'tplus_matches')?> <a class="add-new-h2" href="<?php echo get_admin_url(get_current_blog_id(), 'admin.php?page=tplus_matches');?>"><?php _e('elenco incontri', 'tplus_matches')?></a>
                         </h2>
 
                         <?php if (!empty($notice)): ?>

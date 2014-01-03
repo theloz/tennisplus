@@ -12,3 +12,6 @@
 .adminfooter{position:absolute;bottom:10px;}
 .tplus_msg_error{color:red;}
 .tplus_msg_success{color:green;}
+button.tp_nexttab{padding:5px 10px;}
+button.tp_prevtab{padding:5px 10px;}
+button.tp_confirm{padding:5px 10px;}
